@@ -49,7 +49,7 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] User doador)
+        public IActionResult Create([FromBody] User user)
         {
             try
             {
@@ -58,14 +58,14 @@ namespace MarcaFacilAPI.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    doador.Id = Guid.NewGuid();
-                    doador.CreationDate = DateTime.Now;
+                    user.Id = Guid.NewGuid();
+                    user.CreationDate = DateTime.Now;
 
-                    _userRepository.PostUser(doador);
+                    _userRepository.PostUser(user);
 
-                    _logger.LogInformation($"Doador {doador.Id} criado com sucesso");
+                    _logger.LogInformation($"Doador {user.Id} criado com sucesso");
 
-                    return Created("", new { id = doador.Id, mensagem = $"Doador criado com sucesso" });
+                    return Created("", new { id = user.Id, mensagem = $"Doador criado com sucesso" });
                 }
                 else
                 {
