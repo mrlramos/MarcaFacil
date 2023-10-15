@@ -1,7 +1,6 @@
 ﻿using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -122,7 +121,7 @@ namespace MarcaFacilAPI.Controllers
                     return NotFound(new { id = id, mensagem = $"Usuario não encontrado." });
                 }
 
-                _userRepository.DeleteUser(userToDelete.Id);
+                _userRepository.DeleteUser(userToDelete);
 
                 _logger.LogInformation($"User {id} deleted sucessfully");
 

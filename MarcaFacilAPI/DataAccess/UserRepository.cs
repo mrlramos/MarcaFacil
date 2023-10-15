@@ -29,10 +29,9 @@ namespace MarcaFacilAPI.DataAccess
             _context.SaveChanges();
         }
 
-        public void DeleteUser(Guid id)
+        public void DeleteUser(User user)
         {
-            var entity = _context.User.FirstOrDefault(t => t.Id == id);
-            _context.User.Remove(entity);
+            _context.User.Remove(user);
             _context.SaveChanges();
         }
 
