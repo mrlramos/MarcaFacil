@@ -8,8 +8,9 @@ namespace MarcaFacilAPI.Models
     {
         [Key]
         [Column("Id")]
-        public Guid? Id { get; set; }
+        public Guid Id { get; set; }
 
+        [Required]
         [Column("Name")]
         public string Name { get; set; }
 
@@ -19,13 +20,13 @@ namespace MarcaFacilAPI.Models
         [Column("Code")]
         public Guid Code { get; set; }
 
-        [NotMapped]
-        public User User { get; set; }
-
-        public ICollection<Item>? Items { get; set; }
+        [Required]
+        [ForeignKey("user")]
+        [Column("UserId")]
+        public Guid UserId { get; set; }
 
         [Column("CreationDate")]
-        public DateTime? CreationDate { get; set; }
+        public DateTime CreationDate { get; set; }
 
     }
 }

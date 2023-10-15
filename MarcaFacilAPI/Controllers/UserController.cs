@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MarcaFacilAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/user")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -34,7 +34,8 @@ namespace MarcaFacilAPI.Controllers
                 var users = _userRepository.GetUsers();
                 if (users == null || !users.Any())
                 {
-                    return NotFound(new { mensagem = "Nenhum usuário encontrado." });
+                    _logger.LogInformation($"Users not found");
+                    return NotFound(new { mensagem = "Nenhum usuário encontrado" });
                 }
 
                 _logger.LogInformation($"Returning users");
@@ -147,7 +148,7 @@ namespace MarcaFacilAPI.Controllers
         //        if (users.Count() == 0)
         //        {
         //            _logger.LogInformation($"Users not found");
-        //            return NotFound(new { mensagem = "Não há doadores a serem listados." });
+        //            return NotFound(new { mensagem = "Não há usuários a serem listados." });
         //        }
 
         //        _logger.LogInformation($"Returning users");

@@ -14,6 +14,8 @@ options.UseNpgsql(dataBaseConnection, builder =>
 }));
 
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<PlaceRepository>();
+builder.Services.AddScoped<ItemRepository>();
 ////Adding Logs.txt as log file
 builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>();
 
