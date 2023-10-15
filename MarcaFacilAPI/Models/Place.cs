@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MarcaFacilAPI.Models
 {
     [Table("place")]
     public class Place
     {
+        [Key]
         [Column("Id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [Column("Name")]
         public string Name { get; set; }
@@ -17,16 +19,13 @@ namespace MarcaFacilAPI.Models
         [Column("Code")]
         public Guid Code { get; set; }
 
-        // Relação com User
         [NotMapped]
         public User User { get; set; }
 
-        // Relação com Item
-        [NotMapped]
-        public ICollection<Item> Items { get; set; }
+        public ICollection<Item>? Items { get; set; }
 
         [Column("CreationDate")]
-        public DateTime CreationDate { get; set; }
+        public DateTime? CreationDate { get; set; }
 
     }
 }

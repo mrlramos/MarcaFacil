@@ -1,5 +1,6 @@
 using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.DataAccess.Context;
+using MarcaFacilAPI.Services.Logs;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,14 +13,16 @@ options.UseNpgsql(dataBaseConnection, builder =>
     builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
 }));
 
+builder.Services.AddScoped<UserRepository>();
+////Adding Logs.txt as log file
+builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>();
+
 // Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 

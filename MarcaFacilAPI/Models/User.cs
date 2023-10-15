@@ -8,7 +8,7 @@ namespace MarcaFacilAPI.Models
     {
         [Key]
         [Column("Id")]
-        public Guid? Id { get; set; }
+        public Guid Id { get; set; }
 
         [Column("Name")]
         public string Name { get; set; }
@@ -23,6 +23,6 @@ namespace MarcaFacilAPI.Models
         public ICollection<Place>? Places { get; set; }
 
         [Column("CreationDate")]
-        public DateTime? CreationDate { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

@@ -17,25 +17,15 @@ namespace MarcaFacilAPI.DataAccess
             return _context.User.ToList();
         }
 
-        public User GetUserById(Guid id)
-        {
-            return _context.User.FirstOrDefault(t => t.Id == id);
-        }
-
-        public IEnumerable<User> GetUsersByPage(int page, int pageSize)
-        {
-            List<User> users = _context.User
-                .OrderBy(o => o.Name)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            return users;
-        }
-
         public void PostUser(User user)
         {
             _context.User.Add(user);
+            _context.SaveChanges();
+        }
+
+        public void PutUser(User user)
+        {
+            _context.User.Update(user);
             _context.SaveChanges();
         }
 
@@ -46,9 +36,20 @@ namespace MarcaFacilAPI.DataAccess
             _context.SaveChanges();
         }
 
-        public User GetUserByEmail(string email)
+        public User GetUserById(Guid id)
         {
-            return _context.User.Where(x => x.Email == email).FirstOrDefault();
+            return _context.User.FirstOrDefault(t => t.Id == id);
         }
+
+        //public IEnumerable<User> GetUsersByPage(int page, int pageSize)
+        //{
+        //    List<User> users = _context.User
+        //        .OrderBy(o => o.Name)
+        //        .Skip((page - 1) * pageSize)
+        //        .Take(pageSize)
+        //        .ToList();
+
+        //    return users;
+        //}
     }
 }

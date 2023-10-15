@@ -25,27 +25,28 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<User> GetUsers()
+        public ActionResult<IList<User>> GetUsers()
         {
-            _logger.LogInformation($"Iniciando {ControllerContext.ActionDescriptor.ActionName} em " +
-                    $"{ControllerContext.ActionDescriptor.ControllerName}");
-            return _userRepository.GetUsers();
-        }
-
-        [HttpGet("{page}")]
-        public ActionResult<IEnumerable<User>> GetAllUsersByPage([FromRoute] int page, int tamanhoPagina = 10)
-        {
-            _logger.LogInformation($"Iniciando {ControllerContext.ActionDescriptor.ActionName} em " +
-                $"{ControllerContext.ActionDescriptor.ControllerName}");
-
-            var doadores = _userRepository.GetUsersByPage(page, tamanhoPagina);
-
-            if (doadores.Count() == 0)
+            try
             {
-                return NotFound(new { mensagem = "Não há doadores a serem listados." });
-            }
+                _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
+                    $"{ControllerContext.ActionDescriptor.ControllerName}");
 
-            return Ok(doadores);
+                var users = _userRepository.GetUsers();
+                if (users == null || !users.Any())
+                {
+                    return NotFound(new { mensagem = "Nenhum usuário encontrado." });
+                }
+
+                _logger.LogInformation($"Returning users");
+
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { mensagem = $"{ex.Message}" });
+            }
         }
 
         [HttpPost]
@@ -53,43 +54,112 @@ namespace MarcaFacilAPI.Controllers
         {
             try
             {
-                _logger.LogInformation($"Iniciando {ControllerContext.ActionDescriptor.ActionName} em " +
+                _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
                     $"{ControllerContext.ActionDescriptor.ControllerName}");
 
-                if (ModelState.IsValid)
-                {
-                    user.Id = Guid.NewGuid();
-                    user.CreationDate = DateTime.Now;
+                user.Id = Guid.NewGuid();
+                user.CreationDate = DateTime.Now;
 
-                    _userRepository.PostUser(user);
+                _userRepository.PostUser(user);
 
-                    _logger.LogInformation($"Doador {user.Id} criado com sucesso");
+                _logger.LogInformation($"User {user.Id} created successfully");
 
-                    return Created("", new { id = user.Id, mensagem = $"Doador criado com sucesso" });
-                }
-                else
-                {
-                    return BadRequest();
-                }
+                return Created("", new { id = user.Id, mensagem = $"Usuário criado com sucesso" });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { mensagem = $"{ex.Message}" });
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { mensagem = $"{ex.Message}" });
             }
-
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, [FromBody] User doador)
+        public IActionResult Update(Guid id, [FromBody] User user)
         {
-            return StatusCode(500);
+            try
+            {
+                _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
+                    $"{ControllerContext.ActionDescriptor.ControllerName}");
+
+                User userToUpdate = _userRepository.GetUserById(id);
+
+                if (userToUpdate == null)
+                {
+                    _logger.LogInformation($"User {id} not found");
+                    return NotFound(new { id = id, mensagem = $"Usuario não encontrado." });
+                }
+
+                userToUpdate.Name = user.Name;
+                userToUpdate.Email = user.Email;
+                userToUpdate.Password = user.Password;
+                _userRepository.PutUser(userToUpdate);
+
+                _logger.LogInformation($"User {id} updated sucessfully");
+
+                return Ok(new { id = id, mensagem = $"Usuário atualizado com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { mensagem = $"{ex.Message}" });
+            }
         }
 
         [HttpDelete("{id}")]
         //[Authorize(Roles = "doador")]
         public IActionResult Delete(Guid id)
         {
-            return StatusCode(500);
+            try
+            {
+                _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
+                    $"{ControllerContext.ActionDescriptor.ControllerName}");
+
+                User userToDelete = _userRepository.GetUserById(id);
+
+                if (userToDelete == null)
+                {
+                    _logger.LogInformation($"User {id} not found");
+                    return NotFound(new { id = id, mensagem = $"Usuario não encontrado." });
+                }
+
+                _userRepository.DeleteUser(userToDelete.Id);
+
+                _logger.LogInformation($"User {id} deleted sucessfully");
+
+                return Ok(new { id = userToDelete.Id, mensagem = $"Usuário excluído com sucesso" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return StatusCode(500, new { mensagem = $"{ex.Message}" });
+            }
         }
+
+        //[HttpGet("{page}")]
+        //public ActionResult<IEnumerable<User>> ListarTodosPaginados([FromRoute] int page, int sizePage = 10)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
+        //            $"{ControllerContext.ActionDescriptor.ControllerName}");
+
+        //        var users = _userRepository.GetUsersByPage(page, sizePage);
+
+        //        if (users.Count() == 0)
+        //        {
+        //            _logger.LogInformation($"Users not found");
+        //            return NotFound(new { mensagem = "Não há doadores a serem listados." });
+        //        }
+
+        //        _logger.LogInformation($"Returning users");
+
+        //        return Ok(users);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        return StatusCode(500, new { mensagem = $"{ex.Message}" });
+        //    }
+        //}
     }
 }
