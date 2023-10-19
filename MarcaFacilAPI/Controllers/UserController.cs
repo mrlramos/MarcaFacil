@@ -1,5 +1,6 @@
 ﻿using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -8,6 +9,7 @@ namespace MarcaFacilAPI.Controllers
 {
     [Route("api/user")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserRepository _userRepository;
@@ -136,7 +138,7 @@ namespace MarcaFacilAPI.Controllers
         }
 
         //[HttpGet("{page}")]
-        //public ActionResult<IEnumerable<User>> ListarTodosPaginados([FromRoute] int page, int sizePage = 10)
+        //public ActionResult<IEnumerable<User>> GetUsersByPage([FromRoute] int page, int sizePage = 10)
         //{
         //    try
         //    {

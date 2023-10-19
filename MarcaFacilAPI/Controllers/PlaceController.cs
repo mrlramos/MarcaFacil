@@ -1,5 +1,6 @@
 ﻿using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -27,6 +28,7 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public ActionResult<IList<Place>> GetPlaces()
         {
             try
@@ -52,15 +54,15 @@ namespace MarcaFacilAPI.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult Create([FromBody] Place place)
+        [HttpPost("{id}")]
+        public IActionResult Create(Guid id, [FromBody] Place place)
         {
             try
             {
                 _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
                     $"{ControllerContext.ActionDescriptor.ControllerName}");
 
-                var userExists = _userRepository.GetUserById(place.UserId);
+                var userExists = _userRepository.GetUserById(id);
                 if (userExists == null)
                 {
                     _logger.LogInformation($"User not found to create a place");
