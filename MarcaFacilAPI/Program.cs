@@ -63,6 +63,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication(); //This call needs come before UseAuthorization()
 app.UseAuthorization();
 
 app.MapControllers();
