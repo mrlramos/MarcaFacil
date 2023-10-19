@@ -50,5 +50,10 @@ namespace MarcaFacilAPI.DataAccess
 
         //    return users;
         //}
+
+        public User Login(string email, string password)
+        {
+            return _context.User.FirstOrDefault(t => t.Email == email && t.Password == password);
+        }
     }
 }
