@@ -1,3 +1,7 @@
+using Amazon;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+using Amazon.S3;
 using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.DataAccess.Context;
 using MarcaFacilAPI.Services.Logs;
@@ -45,6 +49,15 @@ builder.Services.AddScoped<ItemRepository>();
 //Logs
 builder.Services.AddSingleton<ILoggerProvider, FileLoggerProvider>();
 
+//Amazon and BucketS3
+builder.Services.AddAWSService<IAmazonS3>(new AWSOptions
+{
+    Region = RegionEndpoint.USEast1,
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration.GetSection("Amazon")["AccessKey"],
+        builder.Configuration.GetSection("Amazon")["SecretKey"])
+});
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -52,6 +65,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// App
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

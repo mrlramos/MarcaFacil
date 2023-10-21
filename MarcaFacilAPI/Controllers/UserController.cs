@@ -1,4 +1,6 @@
-﻿using MarcaFacilAPI.DataAccess;
+﻿using Amazon.S3;
+using Amazon.S3.Model;
+using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,20 +11,22 @@ namespace MarcaFacilAPI.Controllers
 {
     [Route("api/user")]
     [ApiController]
-    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<UserController> _logger;
+        private readonly IAmazonS3 _amazonS3;
 
         public UserController(UserRepository UserRepository,
             IConfiguration configuration,
-            ILogger<UserController> logger)
+            ILogger<UserController> logger,
+            IAmazonS3 amazonS3)
         {
             _userRepository = UserRepository;
             _configuration = configuration;
             _logger = logger;
+            _amazonS3 = amazonS3;
         }
 
         [HttpGet]
@@ -52,7 +56,7 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] User user)
+        public async Task<IActionResult> Create([FromForm] User user)
         {
             try
             {
@@ -61,12 +65,26 @@ namespace MarcaFacilAPI.Controllers
 
                 user.Id = Guid.NewGuid();
                 user.CreationDate = DateTime.Now;
+                user.ImagePath = user.Id;
 
-                _userRepository.PostUser(user);
+                var retornoInsercaoBucket = await UploadFileAsync(
+                    _amazonS3,
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketName"],
+                    "User",
+                    user.Id.ToString() + ".png",
+                    user.Image);
 
-                _logger.LogInformation($"User {user.Id} created successfully");
+                if (retornoInsercaoBucket)
+                {
+                    _userRepository.PostUser(user);
+                    _logger.LogInformation($"User {user.Id} created successfully");
 
-                return Created("", new { id = user.Id, mensagem = $"Usuário criado com sucesso" });
+                    return Created("", new { id = user.Id, mensagem = $"Usuário criado com sucesso" });
+                }
+
+                //AJUSTAR ESSE RETORNO
+                return BadRequest();
+                
             }
             catch (Exception ex)
             {
@@ -163,5 +181,34 @@ namespace MarcaFacilAPI.Controllers
         //        return StatusCode(500, new { mensagem = $"{ex.Message}" });
         //    }
         //}
+
+        public static async Task<bool> UploadFileAsync(
+            IAmazonS3 client,
+            string bucketName,
+            string folderName,
+            string objectName,
+            IFormFile file)
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = $"{folderName}/{objectName}",
+                InputStream = file.OpenReadStream(),
+            };
+
+
+            var response = await client.PutObjectAsync(request);
+
+            if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"Successfully uploaded {objectName} to {bucketName}.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Could not upload {objectName} to {bucketName}.");
+                return false;
+            }
+        }
     }
 }
