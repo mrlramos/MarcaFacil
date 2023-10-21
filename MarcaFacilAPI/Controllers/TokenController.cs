@@ -1,27 +1,37 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using MarcaFacilAPI.DataAccess;
+using MarcaFacilAPI.Models;
+using MarcaFacilAPI.Services.Token;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using STS.Model;
-using STS.Repositories;
-using STS.Services;
 
-namespace STS
+namespace MarcaFacilAPI.Controllers
 {
-    public class HomeController : Controller
+    public class TokenController : Controller
     {
+        private readonly TokenService _tokenService;
+        private readonly UserRepository _userRepository;
+
+        public TokenController(TokenService tokenService,
+            UserRepository userRepository)
+        {
+            _tokenService = tokenService;
+            _userRepository = userRepository;
+        }
+
         [HttpPost]
         [Route("login")]
         [AllowAnonymous]
         public async Task<ActionResult<dynamic>> Authenticate([FromBody] User model)
         {
             // Recupera o usuário
-            var user = UserRepository.Get(model.Username, model.Password);
+            var user = _userRepository.Login(model.Email, model.Password);
 
             // Verifica se o usuário existe
             if (user == null)
                 return NotFound(new { message = "Usuário ou senha inválidos" });
 
             // Gera o Token
-            var token = TokenService.GenerateToken(user);
+            var token = _tokenService.GenerateToken(user);
 
             // Oculta a senha
             user.Password = "";

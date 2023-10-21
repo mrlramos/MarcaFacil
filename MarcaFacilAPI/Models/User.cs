@@ -22,6 +22,12 @@ namespace MarcaFacilAPI.Models
         [Column("Password")]
         public string Password { get; set; }
 
+        [Column("ImagePath")]
+        public Guid? ImagePath { get; set; }
+
+        [NotMapped]
+        public IFormFile Image { get; set; }
+
         [Column("CreationDate")]
         public DateTime CreationDate { get; set; }
     }
