@@ -6,8 +6,11 @@ env:
 
 phases:
   install:
-    runtime-versions:
-      dotnet: 6.0
+    commands:
+      - wget https://dot.net/v1/dotnet-install.sh
+      - chmod +x dotnet-install.sh
+      - ./dotnet-install.sh --version 6.0.0
+      - export PATH="$PATH:$HOME/.dotnet"
   pre_build:
     commands:
       - echo Restore started on `date`
