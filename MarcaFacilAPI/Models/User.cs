@@ -26,7 +26,7 @@ namespace MarcaFacilAPI.Models
         public Guid? ImagePath { get; set; }
 
         [NotMapped]
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
 
         [Column("CreationDate")]
         public DateTime CreationDate { get; set; }

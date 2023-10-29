@@ -16,7 +16,7 @@
 
         public void Dispose()
         {
-            //// Method to clean reasources, if necessary
+            // Method to clean reasources, if necessary
         }
     }
 
