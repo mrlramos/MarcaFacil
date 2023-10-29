@@ -2,7 +2,6 @@
 using Amazon.S3.Model;
 using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MarcaFacilAPI.Controllers
@@ -31,7 +30,6 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public ActionResult<IList<Place>> GetPlaces()
         {
             try

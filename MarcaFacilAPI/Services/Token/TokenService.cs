@@ -26,7 +26,7 @@ namespace MarcaFacilAPI.Services.Token
                     new Claim(ClaimTypes.Name, user.Name.ToString()),
                     new Claim(ClaimTypes.Email, user.Email.ToString())
                 }),
-                Expires = DateTime.UtcNow.AddHours(2),
+                Expires = DateTime.UtcNow.AddHours(8),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);

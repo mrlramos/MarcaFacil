@@ -63,7 +63,7 @@ namespace MarcaFacilAPI.Controllers
                 _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
                     $"{ControllerContext.ActionDescriptor.ControllerName}");
 
-                var placeExists = _placeRepository.GetPlaceById(id);
+                Place placeExists = _placeRepository.GetPlaceById(id);
                 if (placeExists == null)
                 {
                     _logger.LogInformation($"Place not found to create a item");
@@ -127,7 +127,6 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "doador")]
         public IActionResult Delete(Guid id)
         {
             try
