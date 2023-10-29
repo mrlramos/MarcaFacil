@@ -23,6 +23,12 @@ namespace MarcaFacilAPI.Models
         [Column("PlaceId")]
         public Guid PlaceId { get; set; }
 
+        [Column("ImagePath")]
+        public Guid? ImagePath { get; set; }
+
+        [NotMapped]
+        public IFormFile Image { get; set; }
+
         [Column("CreationDate")]
         public DateTime CreationDate { get; set; }
     }

@@ -1,8 +1,8 @@
-﻿using MarcaFacilAPI.DataAccess;
+﻿using Amazon.S3;
+using Amazon.S3.Model;
+using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MarcaFacilAPI.Controllers
 {
@@ -14,16 +14,19 @@ namespace MarcaFacilAPI.Controllers
         private readonly PlaceRepository _placeRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<ItemController> _logger;
+        private readonly IAmazonS3 _amazonS3;
 
         public ItemController(ItemRepository ItemRepository,
             PlaceRepository PlaceRepository,
             IConfiguration configuration,
-            ILogger<ItemController> logger)
+            ILogger<ItemController> logger,
+            IAmazonS3 amazonS3)
         {
             _itemRepository = ItemRepository;
             _placeRepository = PlaceRepository;
             _configuration = configuration;
             _logger = logger;
+            _amazonS3 = amazonS3;
         }
 
         [HttpGet]
@@ -52,15 +55,15 @@ namespace MarcaFacilAPI.Controllers
             }
         }
 
-        [HttpPost]
-        public IActionResult Create([FromBody] Item item)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> Create(Guid id, [FromForm] Item item)
         {
             try
             {
                 _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
                     $"{ControllerContext.ActionDescriptor.ControllerName}");
 
-                var placeExists = _placeRepository.GetPlaceById(item.PlaceId);
+                var placeExists = _placeRepository.GetPlaceById(id);
                 if (placeExists == null)
                 {
                     _logger.LogInformation($"Place not found to create a item");
@@ -69,6 +72,15 @@ namespace MarcaFacilAPI.Controllers
 
                 item.Id = Guid.NewGuid();
                 item.CreationDate = DateTime.Now;
+                item.ImagePath = item.Id;
+                item.PlaceId = id;
+
+                var retornoInsercaoBucket = await UploadFileAsync(
+                    _amazonS3,
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketName"],
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketKeyItem"],
+                    item.Id.ToString() + ".png",
+                    item.Image);
 
                 _itemRepository.PostItem(item);
 
@@ -144,6 +156,35 @@ namespace MarcaFacilAPI.Controllers
             }
         }
 
+        public static async Task<bool> UploadFileAsync(
+            IAmazonS3 client,
+            string bucketName,
+            string folderName,
+            string objectName,
+            IFormFile file)
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = $"{folderName}/{objectName}",
+                InputStream = file.OpenReadStream(),
+            };
+
+
+            var response = await client.PutObjectAsync(request);
+
+            if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"Successfully uploaded {objectName} to {bucketName}.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Could not upload {objectName} to {bucketName}.");
+                return false;
+            }
+        }
+
         //[HttpGet("{page}")]
         //public ActionResult<IEnumerable<Item>> ListarTodosPaginados([FromRoute] int page, int sizePage = 10)
         //{
@@ -170,5 +211,6 @@ namespace MarcaFacilAPI.Controllers
         //        return StatusCode(500, new { mensagem = $"{ex.Message}" });
         //    }
         //}
+
     }
 }
