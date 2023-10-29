@@ -1,9 +1,8 @@
-﻿using MarcaFacilAPI.DataAccess;
+﻿using Amazon.S3;
+using Amazon.S3.Model;
+using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MarcaFacilAPI.Controllers
 {
@@ -15,20 +14,22 @@ namespace MarcaFacilAPI.Controllers
         private readonly UserRepository _userRepository;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PlaceController> _logger;
+        private readonly IAmazonS3 _amazonS3;
 
         public PlaceController(PlaceRepository PlaceRepository,
             UserRepository UserRepository,
             IConfiguration configuration,
-            ILogger<PlaceController> logger)
+            ILogger<PlaceController> logger,
+            IAmazonS3 amazonS3)
         {
             _placeRepository = PlaceRepository;
             _userRepository = UserRepository;
             _configuration = configuration;
             _logger = logger;
+            _amazonS3 = amazonS3;
         }
 
         [HttpGet]
-        [Authorize]
         public ActionResult<IList<Place>> GetPlaces()
         {
             try
@@ -55,7 +56,7 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpPost("{id}")]
-        public IActionResult Create(Guid id, [FromBody] Place place)
+        public async Task<IActionResult> Create(Guid id, [FromForm] Place place)
         {
             try
             {
@@ -70,8 +71,17 @@ namespace MarcaFacilAPI.Controllers
                 }
 
                 place.Id = Guid.NewGuid();
-                place.Code = Guid.NewGuid();
                 place.CreationDate = DateTime.Now;
+                place.ImagePath = place.Id;
+                place.UserId = id;
+                place.Code = Guid.NewGuid();
+
+                var retornoInsercaoBucket = await UploadFileAsync(
+                    _amazonS3,
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketName"],
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketKeyPlace"],
+                    place.Id.ToString() + ".png",
+                    place.Image);
 
                 _placeRepository.PostPlace(place);
 
@@ -118,7 +128,6 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "doador")]
         public IActionResult Delete(Guid id)
         {
             try
@@ -144,6 +153,35 @@ namespace MarcaFacilAPI.Controllers
             {
                 _logger.LogError(ex.Message);
                 return StatusCode(500, new { mensagem = $"{ex.Message}" });
+            }
+        }
+
+        public static async Task<bool> UploadFileAsync(
+            IAmazonS3 client,
+            string bucketName,
+            string folderName,
+            string objectName,
+            IFormFile file)
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = bucketName,
+                Key = $"{folderName}/{objectName}",
+                InputStream = file.OpenReadStream(),
+            };
+
+
+            var response = await client.PutObjectAsync(request);
+
+            if (response.HttpStatusCode == System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine($"Successfully uploaded {objectName} to {bucketName}.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Could not upload {objectName} to {bucketName}.");
+                return false;
             }
         }
 

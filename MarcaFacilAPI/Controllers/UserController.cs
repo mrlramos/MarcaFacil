@@ -2,10 +2,7 @@
 using Amazon.S3.Model;
 using MarcaFacilAPI.DataAccess;
 using MarcaFacilAPI.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MarcaFacilAPI.Controllers
 {
@@ -70,9 +67,12 @@ namespace MarcaFacilAPI.Controllers
                 var retornoInsercaoBucket = await UploadFileAsync(
                     _amazonS3,
                     _configuration.GetSection("Amazon").GetSection("Bucket")["BucketName"],
-                    "User",
+                    _configuration.GetSection("Amazon").GetSection("Bucket")["BucketKeyUser"],
                     user.Id.ToString() + ".png",
                     user.Image);
+
+                var teste = user.Image.ContentType;
+                var teste2 = user.Image.FileName;
 
                 if (retornoInsercaoBucket)
                 {
@@ -84,7 +84,7 @@ namespace MarcaFacilAPI.Controllers
 
                 //AJUSTAR ESSE RETORNO
                 return BadRequest();
-                
+
             }
             catch (Exception ex)
             {
@@ -126,7 +126,6 @@ namespace MarcaFacilAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        //[Authorize(Roles = "doador")]
         public IActionResult Delete(Guid id)
         {
             try
@@ -154,33 +153,6 @@ namespace MarcaFacilAPI.Controllers
                 return StatusCode(500, new { mensagem = $"{ex.Message}" });
             }
         }
-
-        //[HttpGet("{page}")]
-        //public ActionResult<IEnumerable<User>> GetUsersByPage([FromRoute] int page, int sizePage = 10)
-        //{
-        //    try
-        //    {
-        //        _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
-        //            $"{ControllerContext.ActionDescriptor.ControllerName}");
-
-        //        var users = _userRepository.GetUsersByPage(page, sizePage);
-
-        //        if (users.Count() == 0)
-        //        {
-        //            _logger.LogInformation($"Users not found");
-        //            return NotFound(new { mensagem = "Não há usuários a serem listados." });
-        //        }
-
-        //        _logger.LogInformation($"Returning users");
-
-        //        return Ok(users);
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        _logger.LogError(ex.Message);
-        //        return StatusCode(500, new { mensagem = $"{ex.Message}" });
-        //    }
-        //}
 
         public static async Task<bool> UploadFileAsync(
             IAmazonS3 client,
@@ -210,5 +182,32 @@ namespace MarcaFacilAPI.Controllers
                 return false;
             }
         }
+
+        //[HttpGet("{page}")]
+        //public ActionResult<IEnumerable<User>> GetUsersByPage([FromRoute] int page, int sizePage = 10)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation($"Start {ControllerContext.ActionDescriptor.ActionName} in " +
+        //            $"{ControllerContext.ActionDescriptor.ControllerName}");
+
+        //        var users = _userRepository.GetUsersByPage(page, sizePage);
+
+        //        if (users.Count() == 0)
+        //        {
+        //            _logger.LogInformation($"Users not found");
+        //            return NotFound(new { mensagem = "Não há usuários a serem listados." });
+        //        }
+
+        //        _logger.LogInformation($"Returning users");
+
+        //        return Ok(users);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        return StatusCode(500, new { mensagem = $"{ex.Message}" });
+        //    }
+        //}
     }
 }
