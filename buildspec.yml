@@ -5,6 +5,9 @@ env:
     PROJECT: "MarcaFacilAPI"
 
 phases:
+  install:
+    runtime-versions:
+      dotnet: 6.0
   pre_build:
     commands:
       - echo Restore started on `date`
